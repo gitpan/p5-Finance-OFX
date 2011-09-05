@@ -12,9 +12,8 @@ package Finance::OFX;
 
 use strict;
 use warnings;
-use vars qw($VERSION);
 
-$VERSION = sprintf("%d.%03d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+our $VERSION = '2';
 
 use Finance::OFX::UserAgent;
 
@@ -30,7 +29,7 @@ sub new
     # Assume any unprocessed options are meant for the UserAgent, 
     #  which implies that this object will be used to generate and process 
     #  requests instead of processing stored files
-    $self->{ua} = OFX::UserAgent->new(%options) if scalar keys %options;
+    $self->{ua} = Finance::OFX::UserAgent->new(%options) if scalar keys %options;
 
     return $self;
 }

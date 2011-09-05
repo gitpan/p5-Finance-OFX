@@ -12,9 +12,8 @@ package Finance::OFX::Parse;
 
 use strict;
 use warnings;
-use vars qw($VERSION);
 
-$VERSION = sprintf("%d.%03d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+our $VERSION = '2';
 
 use Finance::OFX::Tree;
 use HTTP::Date;
@@ -85,7 +84,7 @@ sub parse_dates
 		# Handle timezone offsets that were already 2 digits
 		$tree->{$_} =~ s/\[([-+]?)([0-9]{1,2}):[A-Z]{3}\]/ $1$2\x30\x30/;
 		# Do the conversion
-		$tree->{$_} = str2time($tree->{$_});
+		$tree->{$_} = str2time($tree->{$_}, 'GMT');
 	    }
 	    else
 	    {
@@ -97,16 +96,15 @@ sub parse_dates
 
 sub parse
 {
+    $_[0] =~ s/\x0D//g;			# Un-networkify newlines
+
     my ($header, $body) = split /\n\n/, shift, 2;
 
     # Parse the OFX header block
     $header =~ s/^\s//;				# Strip leading whitespace
-    $header =~ s/\x0D//g;			# Un-networkify newlines
     my %header = split /[:\n]/, $header;	# Convert to a hash
 
     return undef unless ($header{OFXHEADER} == '100') and ($header{DATA} eq 'OFXSGML');
-
-#    $body =~ s/\x0D//g;			# Un-networkify newlines
 
     my $tree = Finance::OFX::Tree::parse($body);
     return undef unless $tree and ($tree->[0]{name} eq 'ofx');
